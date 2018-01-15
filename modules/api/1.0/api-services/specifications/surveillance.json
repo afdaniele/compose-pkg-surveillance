@@ -1,10 +1,8 @@
 {
     "details" : "Provides info about the server",
-    "enabled" : true,
 	"actions" : {
         "disk_usage" : {
             "details" : "Returns the server disk usage",
-            "enabled" : true,
             "access_level" : [
                 "administrator",
                 "supervisor"
@@ -40,7 +38,6 @@
         },
         "surveillance_status" : {
             "details" : "Checks whether the surveillance camera is recording",
-            "enabled" : true,
             "access_level" : [
                 "administrator",
                 "supervisor"
@@ -76,7 +73,6 @@
         },
         "surveillance_history" : {
             "details" : "Returns recording/post-processing history",
-            "enabled" : true,
             "access_level" : [
                 "administrator",
                 "supervisor"
@@ -101,7 +97,6 @@
                         "details" : "Number of past days to include in the history"
                     }
                 }
-
             },
             "return" : {
                 "values" : {

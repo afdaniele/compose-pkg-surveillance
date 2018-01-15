@@ -10,7 +10,7 @@
             "priority" : 20
         }
     },
-    "access" : [
+    "access_level" : [
         "administrator",
         "supervisor"
     ]
