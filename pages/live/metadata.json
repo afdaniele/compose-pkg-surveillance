@@ -3,7 +3,7 @@
     "menu_entry" : {
         "order" : 2,
         "icon" : {
-            "type" : "glyphicon",
+            "class" : "glyphicon",
             "name" : "facetime-video"
         },
         "responsive" : {
