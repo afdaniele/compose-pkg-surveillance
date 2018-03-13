@@ -5,10 +5,6 @@
 # @Last modified by:   afdaniele
 # @Last modified time: Wednesday, January 10th 2018
 
-
-// import Surveillance core module
-require_once $GLOBALS['__PACKAGES__DIR__'].'surveillance/Surveillance.php';
-
 if( isset($_GET['segment']) ){
 	// show the videos activity page
 	require_once __DIR__.'/actions/segment-details.php';
