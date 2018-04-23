@@ -24,6 +24,10 @@ class Surveillance{
 
 	private static $initialized = false;
 
+	// Note: some pages are designed for 30 minutes chunks of videos.
+	// Changing this value does not change them. Modify cautiously.
+	private static $CHUNKS_DURATION_MINUTES = 30;
+
 	// disable the constructor
 	private function __construct() {}
 
@@ -70,7 +74,7 @@ class Surveillance{
 
 	public static function getDiskStatus( $cameraNum ){
 		// Disk usage
-		$disk_device = Configuration::$SURVEILLANCE[$cameraNum]['disk_dev'];
+		$disk_device = Core::getSetting('disk_dev', 'surveillance');
 		exec( "df | grep '".$disk_device."' | sed 's/\s\s*/ /g' | awk '{print $5}'", $df, $exit_code );
 		if( $exit_code != 0 ){
 			$disk_usage = 1.0;
@@ -88,7 +92,7 @@ class Surveillance{
 
 	public static function getSurveillanceStatus( $cameraNum ){
 		// Surveillance status
-		$video_path = Configuration::$SURVEILLANCE[$cameraNum]['raw_data_path'];
+		$video_path = Core::getSetting('raw_data_path', 'surveillance');
 		exec( "ps -aux | grep ffmpeg | grep 'rtsp://duckietown-visitor:' | grep '".$video_path."' | grep -v grep", $ffmpeg, $exit_code );
 		$is_recording = booleanval( $exit_code == 0 );
 		$current_chunk = null;
@@ -107,7 +111,7 @@ class Surveillance{
 	public static function getSurveillancePostProcessingHistory( $cameraNum, $history_len=null, $month=null, $reverse_order=false ){
 		$result = array( 'total_minutes' => 0, 'days' => array() );
 		// Get the last $history_len dates
-		$activity_path = Configuration::$SURVEILLANCE[$cameraNum]['activity_data_path'];
+		$activity_path = Core::getSetting('activity_data_path', 'surveillance');
 		$command = "ls -l '".$activity_path."' ";
 		$command = $command."| grep -E '[0-9]{4}-".( ( $month != null )? sprintf('%02d', $month) : '[0-9]{2}' )."-[0-9]{2}' ";
 		$command = $command."| awk '{print $9}' ";
@@ -115,7 +119,7 @@ class Surveillance{
 		$command = $command. ( ( $history_len != null )? "| head -".$history_len : '' );
 		exec( $command, $history, $exit_code );
 		// Go through the dates and compute the number of hours recorded
-		$chunk_len = Configuration::$SURVEILLANCE_CHUNKS_DURATION_MINUTES;
+		$chunk_len = Surveillance::$CHUNKS_DURATION_MINUTES;
 		foreach( $history as $day ){
 			$day_path = $activity_path.'/'.$day.'/';
 			$day_activities = array();
@@ -137,7 +141,7 @@ class Surveillance{
 	public static function getSurveillanceRecordingHistory( $cameraNum, $history_len=null, $month=null, $reverse_order=false ){
 		$result = array( 'total_minutes' => 0, 'days' => array() );
 		// Get the last $history_len dates
-		$video_path = Configuration::$SURVEILLANCE[$cameraNum]['raw_data_path'];
+		$video_path = Core::getSetting('raw_data_path', 'surveillance');
 		$command = "ls -l '".$video_path."' ";
 		$command = $command."| grep -E '[0-9]{4}-".( ( $month != null )? sprintf('%02d', $month) : '[0-9]{2}' )."-[0-9]{2}' ";
 		$command = $command."| awk '{print $9}' ";
@@ -145,7 +149,7 @@ class Surveillance{
 		$command = $command. ( ( $history_len != null )? "| head -".$history_len : '' );
 		exec( $command, $history, $exit_code );
 		// Go through the dates and compute the number of hours recorded
-		$chunk_len = Configuration::$SURVEILLANCE_CHUNKS_DURATION_MINUTES;
+		$chunk_len = Surveillance::$CHUNKS_DURATION_MINUTES;
 		foreach( $history as $day ){
 			$day_path = $video_path.'/'.$day.'/';
 			$day_recordings = array();
@@ -166,7 +170,7 @@ class Surveillance{
 
 	public static function sizeOfSurveillanceSegment( $cameraNum, $segment_name ){
 		if( self::isSurveillanceSegmentPresent( $cameraNum, $segment_name ) ){
-			$video_path = Configuration::$SURVEILLANCE[$cameraNum]['raw_data_path'];
+			$video_path = Core::getSetting('raw_data_path', 'surveillance');
 			$segment_parts = explode( '_', $segment_name );
 			$date = $segment_parts[0];
 			$segment_path = sprintf("%s/%s/%s.mp4", $video_path, $date, $segment_name);
@@ -179,7 +183,7 @@ class Surveillance{
 
 	public static function sizeOfWebMSurveillanceSegment( $cameraNum, $segment_name ){
 		if( self::isSurveillanceSegmentPresent( $cameraNum, $segment_name ) ){
-			$video_path = Configuration::$SURVEILLANCE[$cameraNum]['webm_data_path'];
+			$video_path = Core::getSetting('webm_data_path', 'surveillance');
 			$segment_parts = explode( '_', $segment_name );
 			$date = $segment_parts[0];
 			$segment_path = sprintf("%s/%s/web_%s.mp4", $video_path, $date, $segment_name);
@@ -194,8 +198,9 @@ class Surveillance{
 			return array('success' => false, 'data' => 'segment_name does not conform to the format required "YYYY-mm-dd_HH.mm"');
 		}
 		$date = Utils::regex_extract_group($segment_name, "/([0-9]{4}-[0-9]{2}-[0-9]{2})_[0-9]{2}\.[0-9]{2}/", 1);
+		$activity_data_path = Core::getSetting('activity_data_path', 'surveillance');
 		$activity_file = sprintf( "%s/%s/%s.json",
-			Configuration::$SURVEILLANCE[$cameraNum]['activity_data_path'],
+			$activity_data_path,
 			$date,
 			$segment_name
 		);
@@ -212,8 +217,9 @@ class Surveillance{
 		if( preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $date) !== 1 ){
 			return array('success' => false, 'data' => 'date does not conform to the format required "YYYY-mm-dd"');
 		}
+		$activity_data_path = Core::getSetting('activity_data_path', 'surveillance');
 		$activity_file = sprintf( "%s/%s/thumbnail.json",
-			Configuration::$SURVEILLANCE[$cameraNum]['activity_data_path'],
+			$activity_data_path,
 			$date
 		);
 		if( file_exists($activity_file) ){
@@ -225,7 +231,7 @@ class Surveillance{
 	}//getSurveillanceActivityThumbnail
 
 	public static function isSurveillanceSegmentPresent( $cameraNum, $segment_name ){
-		$video_path = Configuration::$SURVEILLANCE[$cameraNum]['raw_data_path'];
+		$video_path = Core::getSetting('raw_data_path', 'surveillance');
 		if( preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}\.[0-9]{2}/', $segment_name) !== 1 ){
 			return false;
 		}
@@ -238,7 +244,7 @@ class Surveillance{
 
 
 	public static function isWebMSurveillanceSegmentPresent( $cameraNum, $segment_name ){
-		$video_path = Configuration::$SURVEILLANCE[$cameraNum]['webm_data_path'];
+		$video_path = Core::getSetting('webm_data_path', 'surveillance');
 		if( preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}\.[0-9]{2}/', $segment_name) !== 1 ){
 			return false;
 		}

@@ -23,14 +23,6 @@ $available_month_year = array(
 	'12-2017'
 );
 
-// Get available cameras
-$available_cameras = array();
-foreach ( \system\classes\Configuration::$SURVEILLANCE as $cam_num => $cam) {
-	if( $cam['enabled'] ){
-		array_push( $available_cameras, $cam_num );
-	}
-}
-
 $features = array(
 	'date' => array(
 		'type' => 'text',
@@ -39,7 +31,7 @@ $features = array(
 	),
 	'camera_num' => array(
 		'type' => 'enum',
-		'values' => $available_cameras,
+		'values' => 1,
 		'default' => '1'
 	)
 );
