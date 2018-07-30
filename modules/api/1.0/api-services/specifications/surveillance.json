@@ -7,7 +7,10 @@
                 "administrator",
                 "supervisor"
             ],
-            "read_only_session" : true,
+            "authentication" : [
+                "web",
+                "app"
+            ],
             "parameters" : {
                 "mandatory" : {
                     "camera_num" : {
@@ -42,7 +45,10 @@
                 "administrator",
                 "supervisor"
             ],
-            "read_only_session" : true,
+            "authentication" : [
+                "web",
+                "app"
+            ],
             "parameters" : {
                 "mandatory" : {
                     "camera_num" : {
@@ -77,7 +83,10 @@
                 "administrator",
                 "supervisor"
             ],
-            "read_only_session" : true,
+            "authentication" : [
+                "web",
+                "app"
+            ],
             "parameters" : {
                 "mandatory" : {
                     "camera_num" : {
